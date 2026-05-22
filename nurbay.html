@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NURBAY — AI Agents for Crypto Survival</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:   #030305;
+  --deep:    #06060a;
+  --surface: #0b0b0f;
+  --card:    #0e0e13;
+  --card2:   #101016;
+  --raise:   #131319;
+  --hover:   #16161e;
+  --border:  #1c1c24;
+  --border2: #232330;
+  --text:    #d8d8e0;
+  --dim:     #72728a;
+  --muted:   #3a3a4a;
+  --ghost:   #1e1e28;
+  --green:   #3a9962;
+  --green2:  #2a6e46;
+  --greenT:  #4aba78;
+  --red:     #9e3535;
+  --redT:    #d45555;
+  --amber:   #9e6e28;
+  --amberT:  #c8893a;
+  --blue:    #2a5070;
+  --blueT:   #4a90c0;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Space Grotesk', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--black);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ─── SCROLLBAR ─────────────────────────── */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--border2)}
+
+/* ─── GLOBAL GRID BG ────────────────────── */
+body::before{
+  content:'';
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(var(--ghost) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ghost) 1px, transparent 1px);
+  background-size:48px 48px;
+  opacity:0.35;
+}
+
+/* ─── NAV ────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:rgba(3,3,5,0.96);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);
+}
+.nav-inner{
+  max-width:1320px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:52px;
+}
+.nav-logo{
+  font-family:var(--mono);font-size:15px;font-weight:700;
+  letter-spacing:0.15em;color:var(--text);text-decoration:none;
+}
+.nav-logo em{font-style:normal;color:var(--greenT)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{
+  color:var(--dim);text-decoration:none;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+  transition:color .15s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-live{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;color:var(--greenT);letter-spacing:0.06em;
+}
+.pulse{
+  width:5px;height:5px;border-radius:50%;background:var(--greenT);
+  animation:blink 1.8s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.nav-btn{
+  border:1px solid var(--border2);background:transparent;
+  color:var(--dim);padding:6px 14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;
+}
+.nav-btn:hover{border-color:var(--green2);color:var(--greenT)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{display:block;width:18px;height:1px;background:var(--dim)}
+
+/* ─── TICKER ─────────────────────────────── */
+.ticker{
+  position:fixed;top:52px;left:0;right:0;z-index:190;
+  background:var(--deep);border-bottom:1px solid var(--border);
+  overflow:hidden;height:28px;display:flex;align-items:center;
+}
+.ticker-track{
+  display:flex;gap:0;
+  animation:scroll 40s linear infinite;
+  white-space:nowrap;
+}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tick{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10px;color:var(--dim);
+  padding:0 20px;border-right:1px solid var(--border);
+  height:28px;
+}
+.tick .up{color:var(--greenT)}
+.tick .dn{color:var(--redT)}
+.tick .sym{color:var(--text);font-weight:600}
+
+/* ─── HERO ───────────────────────────────── */
+.hero{
+  min-height:100vh;padding-top:80px;
+  display:flex;align-items:center;
+  position:relative;overflow:hidden;
+}
+.hero-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(58,153,98,.04) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 100% 100%, rgba(42,80,112,.04) 0%, transparent 60%);
+}
+.hero-scanline{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,transparent 2px,
+    rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px
+  );
+}
+.hero-inner{
+  max-width:1320px;margin:0 auto;padding:60px 28px 80px;
+  position:relative;z-index:1;
+  display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:start;
+}
+.hero-left{}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.12em;
+  text-transform:uppercase;margin-bottom:28px;
+  border-left:2px solid var(--green2);padding-left:10px;
+}
+.hero-eyebrow .pulse{background:var(--greenT)}
+h1{
+  font-family:var(--mono);
+  font-size:clamp(38px,5.5vw,76px);
+  font-weight:700;letter-spacing:-0.03em;line-height:1.0;
+  color:#ffffff;margin-bottom:8px;
+}
+h1 .line2{color:var(--dim);font-weight:300}
+.hero-tagline{
+  font-size:clamp(14px,1.5vw,17px);color:var(--dim);
+  max-width:580px;line-height:1.7;margin:20px 0 36px;font-weight:400;
+}
+.hero-tagline strong{color:var(--text)}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:48px}
+.btn-A{
+  background:var(--green2);border:1px solid var(--green);
+  color:var(--greenT);padding:12px 26px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-A:hover{background:#35573e;border-color:var(--greenT)}
+.btn-B{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--dim);padding:12px 26px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-B:hover{border-color:var(--muted);color:var(--text)}
+
+/* hero stat row */
+.hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+}
+.hstat{background:var(--surface);padding:16px 18px}
+.hstat-v{
+  font-family:var(--mono);font-size:20px;font-weight:600;
+  color:#fff;margin-bottom:3px;
+}
+.hstat-l{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+/* hero right panel */
+.hero-right{position:relative}
+.hero-panel{
+  background:var(--card);border:1px solid var(--border2);
+  padding:20px;
+}
+.panel-hdr{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:14px;border-bottom:1px solid var(--border);
+  margin-bottom:14px;
+}
+.panel-title{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.panel-badge{
+  font-family:var(--mono);font-size:9px;padding:2px 7px;
+  background:rgba(58,153,98,.12);border:1px solid var(--green2);color:var(--greenT);
+  letter-spacing:.06em;
+}
+.mini-alert{
+  padding:9px 0;border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:42px 1fr auto;gap:8px;align-items:start;
+}
+.mini-alert:last-child{border-bottom:none;padding-bottom:0}
+.ma-time{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px}
+.ma-text{font-size:11px;color:var(--dim);line-height:1.4}
+.ma-text strong{color:var(--text);font-weight:500}
+.ma-sev{font-family:var(--mono);font-size:9px;margin-top:2px;text-align:right}
+.H{color:var(--redT)}.M{color:var(--amberT)}.L{color:var(--blueT)}
+
+/* ─── SECTIONS ────────────────────────────── */
+section{
+  padding:64px 0;border-top:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:0 28px}
+.sec-hdr{margin-bottom:36px}
+.sec-pre{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-pre::before{content:'';display:block;width:20px;height:1px;background:var(--border2)}
+h2{
+  font-family:var(--mono);font-size:clamp(18px,2.5vw,24px);
+  font-weight:600;color:#fff;letter-spacing:-.01em;margin-bottom:6px;
+}
+.sec-sub{color:var(--dim);font-size:13px;max-width:520px;font-weight:300}
+
+/* ─── AGENT GRID ─────────────────────────── */
+.agents{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.agent{
+  background:var(--card);padding:28px 28px 24px;
+  transition:background .2s;position:relative;overflow:hidden;
+}
+.agent::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--border2),transparent);
+}
+.agent:hover{background:var(--raise)}
+.agent-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.agent-ico{font-size:18px}
+.agent-status{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;color:var(--greenT);letter-spacing:.06em;
+}
+.agent-name{
+  font-family:var(--mono);font-size:17px;font-weight:700;
+  color:#fff;margin-bottom:8px;letter-spacing:-.01em;
+}
+.agent-desc{
+  color:var(--dim);font-size:12px;line-height:1.65;
+  margin-bottom:22px;font-weight:300;
+}
+.agent-bar-label{
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+  letter-spacing:.06em;margin-bottom:5px;
+}
+.agent-bar{height:2px;background:var(--border);margin-bottom:18px}
+.agent-bar-fill{height:2px;background:var(--green);transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.agent-metrics{
+  display:flex;gap:0;margin-bottom:22px;
+  border:1px solid var(--border);
+}
+.am{
+  flex:1;padding:10px 14px;border-right:1px solid var(--border);
+}
+.am:last-child{border-right:none}
+.am-v{font-family:var(--mono);font-size:15px;font-weight:600;color:#fff;margin-bottom:2px}
+.am-l{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.04em}
+.am-v.danger{color:var(--redT)}
+.am-v.warn{color:var(--amberT)}
+.am-v.ok{color:var(--greenT)}
+.btn-open{
+  background:transparent;border:1px solid var(--border);
+  color:var(--dim);padding:7px 14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;
+}
+.btn-open:hover{border-color:var(--border2);color:var(--text)}
+
+/* ─── FEED ────────────────────────────────── */
+.feed-shell{
+  border:1px solid var(--border2);
+  background:var(--deep);
+}
+.feed-top{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 18px;border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.feed-title{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.feed-live{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--greenT)}
+.feed-list{max-height:380px;overflow-y:auto}
+.fi{
+  display:grid;grid-template-columns:50px 62px 1fr 54px;
+  gap:12px;align-items:start;
+  padding:11px 18px;border-bottom:1px solid var(--border);
+  transition:background .1s;
+}
+.fi:hover{background:var(--surface)}
+.fi:last-child{border-bottom:none}
+.fi-time{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px}
+.fi-tag{
+  font-family:var(--mono);font-size:9px;font-weight:600;
+  padding:2px 5px;letter-spacing:.04em;text-align:center;
+  margin-top:1px;white-space:nowrap;
+}
+.t-rug{background:rgba(158,53,53,.25);color:var(--redT)}
+.t-whale{background:rgba(42,80,112,.25);color:var(--blueT)}
+.t-meme{background:rgba(158,110,40,.25);color:var(--amberT)}
+.t-panic{background:rgba(120,60,20,.25);color:#c07040}
+.fi-text{font-size:12px;color:var(--dim);line-height:1.5}
+.fi-sev{font-family:var(--mono);font-size:9px;text-align:right;margin-top:2px;letter-spacing:.04em}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.fi-new{animation:slideIn .3s ease}
+
+/* ─── SCANNER ─────────────────────────────── */
+.scanner-wrap{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.scan-left,.scan-right{background:var(--card);padding:28px}
+.scan-lbl{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;
+}
+.scan-row{display:flex}
+.scan-in{
+  flex:1;background:var(--deep);border:1px solid var(--border);border-right:none;
+  color:var(--text);padding:10px 14px;
+  font-family:var(--mono);font-size:12px;outline:none;
+  transition:border-color .15s;
+}
+.scan-in:focus{border-color:var(--border2)}
+.scan-in::placeholder{color:var(--muted)}
+.btn-scan{
+  background:var(--green2);border:1px solid var(--green);
+  color:var(--greenT);padding:10px 18px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.btn-scan:hover{background:#35573e}
+.scan-meta{margin-top:20px}
+.sm-row{
+  display:flex;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:11px;
+}
+.sm-row:last-child{border-bottom:none}
+.sm-k{color:var(--muted)}
+.sm-v{color:var(--text)}
+
+/* result side */
+.risk-num-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:6px}
+.risk-big{font-family:var(--mono);font-size:52px;font-weight:700;color:var(--redT);line-height:1}
+.risk-denom{font-family:var(--mono);font-size:16px;color:var(--muted);margin-bottom:8px}
+.verdict-pill{
+  display:inline-block;background:rgba(158,53,53,.2);
+  border:1px solid rgba(212,85,85,.35);
+  color:var(--redT);padding:3px 10px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.risk-bar-wrap{margin-bottom:18px}
+.risk-track{height:3px;background:var(--border)}
+.risk-fill{height:3px;background:linear-gradient(90deg,var(--red),var(--redT))}
+.risk-lbl{
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px;
+}
+.reasons-title{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.reason{
+  display:flex;gap:8px;align-items:flex-start;
+  padding:7px 0;border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--dim);
+}
+.reason:last-child{border-bottom:none}
+.rmark{color:var(--redT);font-family:var(--mono);font-size:10px;margin-top:2px}
+
+/* placeholder */
+.scan-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:var(--muted);
+}
+.scan-placeholder .big-ico{font-size:32px;opacity:.3}
+.scan-placeholder p{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+
+/* ─── WHALE PANEL ─────────────────────────── */
+.whale-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.wcard{
+  background:var(--card);padding:22px 22px 20px;
+  transition:background .2s;
+}
+.wcard:hover{background:var(--raise)}
+.wcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.wchain{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.wdir{font-family:var(--mono);font-size:9px;padding:2px 6px;letter-spacing:.04em}
+.d-out{background:rgba(158,53,53,.18);color:var(--redT)}
+.d-rot{background:rgba(42,80,112,.18);color:var(--blueT)}
+.d-in{background:rgba(158,53,53,.18);color:var(--redT)}
+.d-acc{background:rgba(42,80,112,.18);color:var(--blueT)}
+.wamt{font-family:var(--mono);font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+.wdesc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:10px;font-weight:300}
+.wtime{font-family:var(--mono);font-size:9px;color:var(--muted)}
+
+/* ─── PANIC INDEX ─────────────────────────── */
+.panic-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.pcard{background:var(--card);padding:28px 28px 24px}
+.pcard-lbl{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.04em;margin-bottom:14px}
+.pcard-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.ppct{font-family:var(--mono);font-size:36px;font-weight:700;line-height:1}
+.pstatus{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.pnote{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px;font-weight:300}
+.ptrack{height:2px;background:var(--border)}
+.pfill{height:2px;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+/* levels */
+.lv-high .ppct{color:var(--redT)}
+.lv-high .pstatus{color:var(--redT)}
+.lv-high .pfill{background:var(--redT)}
+.lv-med .ppct{color:var(--amberT)}
+.lv-med .pstatus{color:var(--amberT)}
+.lv-med .pfill{background:var(--amberT)}
+.lv-low .ppct{color:var(--blueT)}
+.lv-low .pstatus{color:var(--blueT)}
+.lv-low .pfill{background:var(--blueT)}
+
+/* ─── MARKETPLACE ─────────────────────────── */
+.mkt-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+  margin-bottom:28px;
+}
+.mkt-card{
+  background:var(--card);padding:22px;
+  transition:background .2s;
+}
+.mkt-card:hover{background:var(--raise)}
+.mkt-ico{font-size:14px;margin-bottom:10px;opacity:.7}
+.mkt-name{font-family:var(--mono);font-size:13px;font-weight:600;color:#fff;margin-bottom:5px}
+.mkt-desc{font-size:12px;color:var(--muted);line-height:1.55;font-weight:300}
+.mkt-pill{
+  display:inline-block;margin-top:10px;
+  font-family:var(--mono);font-size:9px;padding:2px 7px;
+  background:var(--ghost);border:1px solid var(--border);
+  color:var(--muted);letter-spacing:.06em;
+}
+.mkt-note{color:var(--dim);font-size:13px;max-width:560px;font-weight:300;line-height:1.7}
+
+/* ─── NUR TOKEN ────────────────────────────── */
+.nur-wrap{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.nur-left,.nur-right{background:var(--card);padding:36px}
+.nur-desc{color:var(--dim);font-size:13px;line-height:1.75;font-weight:300;margin-top:12px;margin-bottom:20px}
+.nur-warn{
+  border-left:2px solid var(--border2);padding-left:14px;
+  font-size:12px;color:var(--muted);font-style:italic;line-height:1.6;
+}
+.nur-list{list-style:none}
+.nur-li{
+  display:flex;gap:14px;padding:14px 0;
+  border-bottom:1px solid var(--border);align-items:flex-start;
+}
+.nur-li:last-child{border-bottom:none}
+.nur-li-ico{font-size:12px;opacity:.6;margin-top:2px}
+.nur-li-title{font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;margin-bottom:2px}
+.nur-li-sub{font-size:12px;color:var(--muted);font-weight:300}
+
+/* ─── REPORTS ──────────────────────────────── */
+.reports{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.rcard{
+  background:var(--card);padding:26px 28px;
+  transition:background .2s;
+}
+.rcard:hover{background:var(--raise)}
+.rnum{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;margin-bottom:10px}
+.rtitle{font-size:14px;font-weight:600;color:#fff;margin-bottom:8px;line-height:1.4}
+.rbody{font-size:12px;color:var(--dim);line-height:1.65;font-weight:300}
+.rfooter{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:14px;padding-top:12px;border-top:1px solid var(--border);
+}
+.rsource{font-family:var(--mono);font-size:9px;color:var(--muted)}
+.rtag{
+  font-family:var(--mono);font-size:9px;padding:2px 6px;
+  border:1px solid var(--border);color:var(--muted);
+}
+
+/* ─── FOOTER ────────────────────────────────── */
+footer{border-top:1px solid var(--border);padding:44px 0 32px;position:relative;z-index:1}
+.footer-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr;
+  gap:40px;margin-bottom:32px;
+}
+.flogo{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;letter-spacing:.12em;margin-bottom:10px}
+.flogo em{font-style:normal;color:var(--greenT)}
+.ftagline{font-size:12px;color:var(--muted);line-height:1.6;max-width:260px;font-weight:300}
+.fcol-title{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.flinks{list-style:none}
+.flinks li{margin-bottom:9px}
+.flinks a{color:var(--dim);text-decoration:none;font-size:12px;transition:color .15s}
+.flinks a:hover{color:var(--text)}
+.footer-bottom{
+  padding-top:20px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
+}
+.fcopy{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.fdisclaim{font-size:11px;color:var(--muted);max-width:580px;line-height:1.6}
+
+/* ─── MOBILE MENU ──────────────────────────── */
+.mob-menu{
+  display:none;position:fixed;top:80px;left:0;right:0;
+  background:rgba(3,3,5,.98);border-bottom:1px solid var(--border);
+  padding:20px 28px;z-index:190;backdrop-filter:blur(16px);
+}
+.mob-menu.open{display:block}
+.mob-menu ul{list-style:none}
+.mob-menu ul li{margin-bottom:16px}
+.mob-menu ul a{font-family:var(--mono);font-size:12px;color:var(--dim);text-decoration:none;letter-spacing:.06em}
+
+/* ─── REVEAL ────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.reveal.on{opacity:1;transform:translateY(0)}
+
+/* ─── RESPONSIVE ──────────────────────────── */
+@media(max-width:1024px){
+  .hero-inner{grid-template-columns:1fr}
+  .hero-right{display:none}
+}
+@media(max-width:860px){
+  .nav-links,.nav-right{display:none}
+  .hamburger{display:flex}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .agents{grid-template-columns:1fr}
+  .scanner-wrap{grid-template-columns:1fr}
+  .whale-grid{grid-template-columns:repeat(2,1fr)}
+  .panic-grid{grid-template-columns:1fr}
+  .mkt-grid{grid-template-columns:repeat(2,1fr)}
+  .nur-wrap{grid-template-columns:1fr}
+  .reports{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .whale-grid{grid-template-columns:1fr}
+  .mkt-grid{grid-template-columns:1fr}
+  .fi{grid-template-columns:40px 52px 1fr}
+  .fi-sev{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#"><em>NUR</em>BAY</a>
+    <ul class="nav-links">
+      <li><a href="#agents">Agents</a></li>
+      <li><a href="#alerts">Alerts</a></li>
+      <li><a href="#scanner">Scanner</a></li>
+      <li><a href="#whale">Whale</a></li>
+      <li><a href="#marketplace">Marketplace</a></li>
+      <li><a href="#token">$NUR</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="nav-live"><span class="pulse"></span>4 AGENTS ONLINE</div>
+      <button class="nav-btn">Launch Network</button>
+    </div>
+    <div class="hamburger" onclick="toggleMob()"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tk"></div>
+</div>
+
+<!-- MOB MENU -->
+<div class="mob-menu" id="mobMenu">
+  <ul>
+    <li><a href="#agents" onclick="toggleMob()">Agents</a></li>
+    <li><a href="#alerts" onclick="toggleMob()">Alerts</a></li>
+    <li><a href="#scanner" onclick="toggleMob()">Scanner</a></li>
+    <li><a href="#whale" onclick="toggleMob()">Whale Flow</a></li>
+    <li><a href="#marketplace" onclick="toggleMob()">Marketplace</a></li>
+    <li><a href="#token" onclick="toggleMob()">$NUR</a></li>
+  </ul>
+</div>
+
+<!-- HERO -->
+<section class="hero" style="border-top:none">
+  <div class="hero-vignette"></div>
+  <div class="hero-scanline"></div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow"><span class="pulse"></span> INTELLIGENCE NETWORK ACTIVE — REAL-TIME MONITORING</div>
+      <h1>AI Agents for<br><span class="line2">Crypto Survival</span></h1>
+      <p class="hero-tagline">NURBAY deploys specialized AI agents to monitor <strong>rug risks, whale flows, meme coin momentum,</strong> and market panic — before retail reacts.</p>
+      <div class="hero-actions">
+        <a href="#agents" class="btn-A">→ Launch Agent Network</a>
+        <a href="#alerts" class="btn-B">View Live Alerts</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-v">4,218</div><div class="hstat-l">Alerts today</div></div>
+        <div class="hstat"><div class="hstat-v">91.4%</div><div class="hstat-l">Avg accuracy</div></div>
+        <div class="hstat"><div class="hstat-v">$2.1B</div><div class="hstat-l">Whale volume</div></div>
+        <div class="hstat"><div class="hstat-v">14ms</div><div class="hstat-l">Detection time</div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-panel">
+        <div class="panel-hdr">
+          <span class="panel-title">LIVE AGENT OUTPUT</span>
+          <span class="panel-badge"><span class="pulse" style="display:inline-block;margin-right:4px"></span>STREAMING</span>
+        </div>
+        <div id="heroPanelFeed"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section id="agents">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">01 — AGENT NETWORK</div>
+      <h2>Specialized Intelligence Agents</h2>
+      <p class="sec-sub">Four dedicated agents. One mission: detect threats before the market reacts.</p>
+    </div>
+    <div class="agents">
+      <div class="agent reveal">
+        <div class="agent-top">
+          <span class="agent-ico">☠️</span>
+          <div class="agent-status"><span class="pulse"></span>ONLINE</div>
+        </div>
+        <div class="agent-name">RugHunter AI</div>
+        <div class="agent-desc">Detects rug risks, suspicious developers, fake liquidity, holder concentration, sniper activity, and dangerous token launches across Solana, ETH, and BSC.</div>
+        <div class="agent-bar-label"><span>ACCURACY</span><span>93.2%</span></div>
+        <div class="agent-bar"><div class="agent-bar-fill" data-w="93"></div></div>
+        <div class="agent-metrics">
+          <div class="am"><div class="am-v ok">93.2%</div><div class="am-l">Accuracy</div></div>
+          <div class="am"><div class="am-v">847</div><div class="am-l">Alerts today</div></div>
+          <div class="am"><div class="am-v danger">12</div><div class="am-l">High risk</div></div>
+        </div>
+        <button class="btn-open">Open Agent →</button>
+      </div>
+      <div class="agent reveal">
+        <div class="agent-top">
+          <span class="agent-ico">🐋</span>
+          <div class="agent-status"><span class="pulse"></span>ONLINE</div>
+        </div>
+        <div class="agent-name">WhaleFlow AI</div>
+        <div class="agent-desc">Tracks whale wallets, smart money rotations, exchange inflows and outflows, and large token movements across major chains in real time.</div>
+        <div class="agent-bar-label"><span>ACCURACY</span><span>88.7%</span></div>
+        <div class="agent-bar"><div class="agent-bar-fill" data-w="88"></div></div>
+        <div class="agent-metrics">
+          <div class="am"><div class="am-v ok">88.7%</div><div class="am-l">Accuracy</div></div>
+          <div class="am"><div class="am-v">1,241</div><div class="am-l">Alerts today</div></div>
+          <div class="am"><div class="am-v">$4.8B</div><div class="am-l">Vol tracked</div></div>
+        </div>
+        <button class="btn-open">Open Agent →</button>
+      </div>
+      <div class="agent reveal">
+        <div class="agent-top">
+          <span class="agent-ico">🚀</span>
+          <div class="agent-status"><span class="pulse"></span>ONLINE</div>
+        </div>
+        <div class="agent-name">MemeSniper AI</div>
+        <div class="agent-desc">Finds early meme coin momentum, fresh wallet activity, social spikes, volume anomalies, and trending low-cap tokens before mass attention arrives.</div>
+        <div class="agent-bar-label"><span>ACCURACY</span><span>91.5%</span></div>
+        <div class="agent-bar"><div class="agent-bar-fill" data-w="91"></div></div>
+        <div class="agent-metrics">
+          <div class="am"><div class="am-v ok">91.5%</div><div class="am-l">Accuracy</div></div>
+          <div class="am"><div class="am-v">2,104</div><div class="am-l">Alerts today</div></div>
+          <div class="am"><div class="am-v">318</div><div class="am-l">Tokens scanned</div></div>
+        </div>
+        <button class="btn-open">Open Agent →</button>
+      </div>
+      <div class="agent reveal">
+        <div class="agent-top">
+          <span class="agent-ico">📉</span>
+          <div class="agent-status"><span class="pulse"></span>ONLINE</div>
+        </div>
+        <div class="agent-name">Panic Detector AI</div>
+        <div class="agent-desc">Measures market fear, sell pressure, social panic, liquidity stress, and sudden sentiment changes. Alerts before the cascade reaches retail positions.</div>
+        <div class="agent-bar-label"><span>ACCURACY</span><span>89.1%</span></div>
+        <div class="agent-bar"><div class="agent-bar-fill" data-w="89"></div></div>
+        <div class="agent-metrics">
+          <div class="am"><div class="am-v ok">89.1%</div><div class="am-l">Accuracy</div></div>
+          <div class="am"><div class="am-v">326</div><div class="am-l">Alerts today</div></div>
+          <div class="am"><div class="am-v warn">HIGH</div><div class="am-l">Current index</div></div>
+        </div>
+        <button class="btn-open">Open Agent →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALERTS -->
+<section id="alerts">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">02 — LIVE ALERTS FEED</div>
+      <h2>Agent Intelligence Stream</h2>
+      <p class="sec-sub">Live output from all active agents. Feed refreshes automatically.</p>
+    </div>
+    <div class="feed-shell reveal">
+      <div class="feed-top">
+        <span class="feed-title">AGENT OUTPUT — ALL CHANNELS</span>
+        <span class="feed-live"><span class="pulse"></span>LIVE</span>
+      </div>
+      <div class="feed-list" id="feedList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCANNER -->
+<section id="scanner">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">03 — TOKEN RISK SCANNER</div>
+      <h2>Contract Risk Analysis</h2>
+      <p class="sec-sub">Paste any token contract. RugHunter AI scans holder distribution, liquidity, and developer behavior.</p>
+    </div>
+    <div class="scanner-wrap reveal">
+      <div class="scan-left">
+        <div class="scan-lbl">Token Contract Address</div>
+        <div class="scan-row">
+          <input class="scan-in" id="cInput" type="text" placeholder="Paste token contract address..." />
+          <button class="btn-scan" onclick="doScan()">Scan Token</button>
+        </div>
+        <div class="scan-meta" id="scanMeta" style="display:none">
+          <div class="sm-row"><span class="sm-k">Chain</span><span class="sm-v">Solana (SOL)</span></div>
+          <div class="sm-row"><span class="sm-k">Token</span><span class="sm-v">SAMPLE</span></div>
+          <div class="sm-row"><span class="sm-k">Total Supply</span><span class="sm-v">1,000,000,000</span></div>
+          <div class="sm-row"><span class="sm-k">Holders</span><span class="sm-v">312</span></div>
+          <div class="sm-row"><span class="sm-k">Liquidity</span><span class="sm-v">$48,200</span></div>
+          <div class="sm-row"><span class="sm-k">Launch Age</span><span class="sm-v">3 days</span></div>
+        </div>
+        <div id="scanPrompt" style="margin-top:22px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8">
+          → Enter a contract address to begin analysis<br>
+          <span style="color:var(--ghost)">— Demo: any input generates sample result</span>
+        </div>
+      </div>
+      <div class="scan-right" id="scanResult" style="display:none">
+        <div class="scan-lbl">Analysis Result — SAMPLE TOKEN</div>
+        <div class="risk-num-row">
+          <div class="risk-big">82</div>
+          <div class="risk-denom">/100</div>
+        </div>
+        <div class="verdict-pill">⚠ HIGH RISK</div>
+        <div class="risk-bar-wrap">
+          <div class="risk-track"><div class="risk-fill" style="width:82%"></div></div>
+          <div class="risk-lbl"><span>0 — SAFE</span><span>100 — CRITICAL</span></div>
+        </div>
+        <div class="reasons-title">Risk Factors Detected</div>
+        <div class="reason"><span class="rmark">✕</span><span>Top holder concentration exceeds 48% — extreme imbalance detected</span></div>
+        <div class="reason"><span class="rmark">✕</span><span>Liquidity pool artificially inflated with low depth — exit risk present</span></div>
+        <div class="reason"><span class="rmark">✕</span><span>Abnormal fresh wallet activity — coordinated sniping pattern confirmed</span></div>
+        <div class="reason"><span class="rmark">✕</span><span>Developer wallet shows prior rug history signal matches</span></div>
+        <div class="reason"><span class="rmark">✕</span><span>No verified liquidity lock. Unlock risk is immediate</span></div>
+      </div>
+      <div class="scan-right scan-placeholder" id="scanPlaceholder">
+        <div class="big-ico">☠</div>
+        <p>Awaiting Input</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHALE -->
+<section id="whale">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">04 — WHALE MOVEMENT PANEL</div>
+      <h2>Whale Activity Monitor</h2>
+      <p class="sec-sub">WhaleFlow AI tracks significant capital movements across chains continuously.</p>
+    </div>
+    <div class="whale-grid reveal">
+      <div class="wcard">
+        <div class="wcard-top"><span class="wchain">BTC / BITCOIN</span><span class="wdir d-out">→ EXCHANGE</span></div>
+        <div class="wamt">$81.4M</div>
+        <div class="wdesc">Large BTC transfer to Binance. Potential sell pressure signal. 3 wallets coordinated movement.</div>
+        <div class="wtime">14 min ago</div>
+      </div>
+      <div class="wcard">
+        <div class="wcard-top"><span class="wchain">SOL / SOLANA</span><span class="wdir d-rot">ROTATE</span></div>
+        <div class="wamt">$14.2M</div>
+        <div class="wdesc">Smart money rotating from ETH ecosystem into Solana meme tokens. 6 wallets confirmed.</div>
+        <div class="wtime">27 min ago</div>
+      </div>
+      <div class="wcard">
+        <div class="wcard-top"><span class="wchain">ETH / ETHEREUM</span><span class="wdir d-in">INFLOW</span></div>
+        <div class="wamt">$42.7M</div>
+        <div class="wdesc">Exchange inflow alert. Large ETH deposits across Coinbase and Kraken. High probability sell intent.</div>
+        <div class="wtime">1h 4m ago</div>
+      </div>
+      <div class="wcard">
+        <div class="wcard-top"><span class="wchain">SOL / MEME</span><span class="wdir d-acc">ACCUM</span></div>
+        <div class="wamt">$2.4M</div>
+        <div class="wdesc">Whale accumulation across 4 low-cap Solana meme tokens. Wallet cluster appears coordinated.</div>
+        <div class="wtime">2h 18m ago</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANIC INDEX -->
+<section id="panic">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">05 — MARKET PANIC INDEX</div>
+      <h2>Real-Time Sentiment Analysis</h2>
+      <p class="sec-sub">Panic Detector AI synthesizes on-chain data, social volume, and sell-side pressure into actionable indices.</p>
+    </div>
+    <div class="panic-grid reveal">
+      <div class="pcard lv-high">
+        <div class="pcard-lbl">Meme Market Panic</div>
+        <div class="pcard-row"><div class="ppct">76%</div><div class="pstatus">ELEVATED</div></div>
+        <div class="pnote">Sell pressure on meme coins rising. Retail holders beginning to exit positions across major pairs.</div>
+        <div class="ptrack"><div class="pfill" style="width:76%"></div></div>
+      </div>
+      <div class="pcard lv-high">
+        <div class="pcard-lbl">Retail FOMO Index</div>
+        <div class="pcard-row"><div class="ppct">88%</div><div class="pstatus">CRITICAL</div></div>
+        <div class="pnote">Retail FOMO near peak levels. Social volume and search interest at 90-day highs. Historically precedes correction.</div>
+        <div class="ptrack"><div class="pfill" style="width:88%"></div></div>
+      </div>
+      <div class="pcard lv-med">
+        <div class="pcard-lbl">Smart Money Exit Risk</div>
+        <div class="pcard-row"><div class="ppct">64%</div><div class="pstatus">MODERATE</div></div>
+        <div class="pnote">Institutional wallet activity suggests partial profit-taking. Not yet a full exit signal. Watch BTC wallets.</div>
+        <div class="ptrack"><div class="pfill" style="width:64%"></div></div>
+      </div>
+      <div class="pcard lv-med">
+        <div class="pcard-lbl">Liquidity Stress Index</div>
+        <div class="pcard-row"><div class="ppct">71%</div><div class="pstatus">ELEVATED</div></div>
+        <div class="pnote">On-chain liquidity thinning across smaller meme pools. Slippage risk increasing. Exit windows narrowing.</div>
+        <div class="ptrack"><div class="pfill" style="width:71%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETPLACE -->
+<section id="marketplace">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">06 — AGENT MARKETPLACE</div>
+      <h2>Upcoming Intelligence Agents</h2>
+      <p class="sec-sub">Deploy specialized agents, customize alert thresholds, and build your own crypto intelligence stack.</p>
+    </div>
+    <div class="mkt-grid reveal">
+      <div class="mkt-card"><div class="mkt-ico">👁</div><div class="mkt-name">Insider Wallet Tracker</div><div class="mkt-desc">Monitors known alpha wallets and historically profitable addresses for early positioning signals.</div><div class="mkt-pill">COMING SOON</div></div>
+      <div class="mkt-card"><div class="mkt-ico">📊</div><div class="mkt-name">Fake Volume Detector</div><div class="mkt-desc">Identifies wash trading, volume manipulation, and artificial liquidity inflation on DEX and CEX pairs.</div><div class="mkt-pill">COMING SOON</div></div>
+      <div class="mkt-card"><div class="mkt-ico">🔓</div><div class="mkt-name">Liquidity Unlock Monitor</div><div class="mkt-desc">Tracks token unlock schedules, vesting cliff events, and LP removal alerts across chains.</div><div class="mkt-pill">COMING SOON</div></div>
+      <div class="mkt-card"><div class="mkt-ico">📢</div><div class="mkt-name">Influencer Hype Scanner</div><div class="mkt-desc">Detects coordinated influencer promotion campaigns and paid shilling activity before the crowd.</div><div class="mkt-pill">COMING SOON</div></div>
+      <div class="mkt-card"><div class="mkt-ico">🏦</div><div class="mkt-name">CEX Flow Watcher</div><div class="mkt-desc">Monitors net exchange flows, deposit-to-withdrawal ratios, and anomalous order book activity.</div><div class="mkt-pill">COMING SOON</div></div>
+      <div class="mkt-card"><div class="mkt-ico">⚡</div><div class="mkt-name">Pump Launch Watcher</div><div class="mkt-desc">Identifies coordinated pump patterns, suspicious early volume, and rapid price deviations at launch.</div><div class="mkt-pill">COMING SOON</div></div>
+    </div>
+    <p class="mkt-note">Deploy specialized agents, customize alert thresholds, and assemble your own crypto intelligence system. All agents configurable via the NURBAY dashboard.</p>
+  </div>
+</section>
+
+<!-- NUR TOKEN -->
+<section id="token">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">07 — TOKEN UTILITY</div>
+    </div>
+    <div class="nur-wrap reveal">
+      <div class="nur-left">
+        <h2>Powered by $NUR</h2>
+        <p class="nur-desc">The $NUR token is planned as the utility layer of the NURBAY network. Access, governance, and advanced capabilities may be unlocked through token usage — not investment speculation.</p>
+        <div class="nur-warn">$NUR is a utility token. It does not represent a financial investment and carries no guaranteed returns or profit expectations. Crypto markets carry significant risk. Always do your own research.</div>
+      </div>
+      <div class="nur-right">
+        <ul class="nur-list">
+          <li class="nur-li"><div class="nur-li-ico">⚙</div><div><div class="nur-li-title">Premium Agent Access</div><div class="nur-li-sub">Unlock advanced agents and higher alert frequency tiers.</div></div></li>
+          <li class="nur-li"><div class="nur-li-ico">🔔</div><div><div class="nur-li-title">Custom Alert Creation</div><div class="nur-li-sub">Define your own risk parameters and alert conditions.</div></div></li>
+          <li class="nur-li"><div class="nur-li-ico">🛒</div><div><div class="nur-li-title">Agent Marketplace Usage</div><div class="nur-li-sub">Deploy community-built agents from the marketplace.</div></div></li>
+          <li class="nur-li"><div class="nur-li-ico">🗳</div><div><div class="nur-li-title">Community Governance</div><div class="nur-li-sub">Vote on agent development priorities and network parameters.</div></div></li>
+          <li class="nur-li"><div class="nur-li-ico">🏅</div><div><div class="nur-li-title">Hunter Reputation & Rewards</div><div class="nur-li-sub">Earn recognition for contributing accurate risk reports.</div></div></li>
+          <li class="nur-li"><div class="nur-li-ico">⬡</div><div><div class="nur-li-title">API Access</div><div class="nur-li-sub">Integrate NURBAY intelligence into your own tools and dashboards.</div></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REPORTS -->
+<section id="reports">
+  <div class="wrap">
+    <div class="sec-hdr reveal">
+      <div class="sec-pre">08 — INTELLIGENCE BRIEFINGS</div>
+      <h2>Crypto Reality Reports</h2>
+      <p class="sec-sub">Analytical summaries from NURBAY agents. Not financial advice.</p>
+    </div>
+    <div class="reports reveal">
+      <div class="rcard">
+        <div class="rnum">RPT-001</div>
+        <div class="rtitle">Retail FOMO Rising While Whale Activity Slows</div>
+        <div class="rbody">Social volume and search interest are approaching 90-day highs while tracked whale wallets show reduced accumulation. Historically, this divergence has preceded sharp corrections as retail positions peak without institutional support.</div>
+        <div class="rfooter"><span class="rsource">WhaleFlow AI + Panic Detector AI</span><span class="rtag">SENTIMENT</span></div>
+      </div>
+      <div class="rcard">
+        <div class="rnum">RPT-002</div>
+        <div class="rtitle">Meme Coin Liquidity Becoming Structurally Unstable</div>
+        <div class="rbody">RugHunter AI detected a 34% increase in low-liquidity token launches over 72 hours. A significant portion show artificial pool construction designed to resist initial scrutiny before exit events.</div>
+        <div class="rfooter"><span class="rsource">RugHunter AI</span><span class="rtag">RISK</span></div>
+      </div>
+      <div class="rcard">
+        <div class="rnum">RPT-003</div>
+        <div class="rtitle">Smart Money Rotation Confirmed Across Solana Ecosystem</div>
+        <div class="rbody">WhaleFlow AI confirmed net capital rotation from established Solana DeFi positions into early-stage meme tokens. 14 wallets with verifiable profitable histories have repositioned in the past 48 hours.</div>
+        <div class="rfooter"><span class="rsource">WhaleFlow AI</span><span class="rtag">FLOW</span></div>
+      </div>
+      <div class="rcard">
+        <div class="rnum">RPT-004</div>
+        <div class="rtitle">Volume Growth Without Holder Depth Increases Panic Risk</div>
+        <div class="rbody">Panic Detector AI notes tokens showing volume spikes with fewer than 500 unique holders exhibit high-risk patterns. When liquidity is thin and concentrated, single large exits create cascading sell pressure disproportionate to market cap.</div>
+        <div class="rfooter"><span class="rsource">Panic Detector AI + MemeSniper AI</span><span class="rtag">ANALYSIS</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="flogo"><em>NUR</em>BAY</div>
+        <p class="ftagline">AI agent network for crypto intelligence, risk detection, and market survival.</p>
+      </div>
+      <div>
+        <div class="fcol-title">Agents</div>
+        <ul class="flinks">
+          <li><a href="#">RugHunter AI</a></li>
+          <li><a href="#">WhaleFlow AI</a></li>
+          <li><a href="#">MemeSniper AI</a></li>
+          <li><a href="#">Panic Detector AI</a></li>
+          <li><a href="#">Agent Marketplace</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fcol-title">Platform</div>
+        <ul class="flinks">
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">API Access</a></li>
+          <li><a href="#">$NUR Token</a></li>
+          <li><a href="#">Community</a></li>
+          <li><a href="#">Terms of Use</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="fcopy">© 2025 NURBAY — All rights reserved</div>
+      <div class="fdisclaim">NURBAY is a crypto intelligence and risk-awareness platform. It is not financial advice. All information is for educational and analytical purposes only. Crypto markets are highly volatile and unpredictable. Never invest more than you can afford to lose.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ─── TICKER ──────────────────────────────── */
+const ticks=[
+  ['BTC','$68,420','-1.4','dn'],['ETH','$3,614','+0.8','up'],
+  ['SOL','$182','+2.1','up'],['DOGE','$0.148','-3.2','dn'],
+  ['PEPE','$0.0000142','-5.6','dn'],['WIF','$2.84','+1.9','up'],
+  ['BONK','$0.0000281','-2.8','dn'],['FLOKI','$0.000198','+0.4','up'],
+  ['SHIB','$0.0000247','-1.1','dn'],['ARB','$1.02','+3.3','up'],
+  ['OP','$2.14','-0.7','dn'],['AVAX','$38.60','+1.2','up'],
+  ['BTC','$68,420','-1.4','dn'],['ETH','$3,614','+0.8','up'],
+  ['SOL','$182','+2.1','up'],['DOGE','$0.148','-3.2','dn'],
+  ['PEPE','$0.0000142','-5.6','dn'],['WIF','$2.84','+1.9','up'],
+  ['BONK','$0.0000281','-2.8','dn'],['FLOKI','$0.000198','+0.4','up'],
+  ['SHIB','$0.0000247','-1.1','dn'],['ARB','$1.02','+3.3','up'],
+  ['OP','$2.14','-0.7','dn'],['AVAX','$38.60','+1.2','up'],
+];
+const tk=document.getElementById('tk');
+ticks.forEach(t=>{
+  tk.innerHTML+=`<span class="tick"><span class="sym">${t[0]}</span><span>${t[1]}</span><span class="${t[3]}">${t[2]}%</span></span>`;
+});
+
+/* ─── FEED DATA ──────────────────────────── */
+const FEED=[
+  {t:'00:14',tag:'t-rug',lbl:'RUG',text:'Suspicious liquidity on new Solana token 0x4f3a…d8e1. Dev wallet matches 2 prior exit patterns. Top 3 holders: 61%.',sev:'HIGH',sc:'H'},
+  {t:'00:27',tag:'t-whale',lbl:'WHALE',text:'$2.4M moving from Solana DeFi wallets into meme token positions. Cluster: 6 addresses confirmed.',sev:'MEDIUM',sc:'M'},
+  {t:'00:41',tag:'t-meme',lbl:'MEME',text:'Social volume on BLORP +340% in 2h. Volume-to-holder ratio anomalous. Fresh wallet activity above threshold.',sev:'MEDIUM',sc:'M'},
+  {t:'00:58',tag:'t-panic',lbl:'PANIC',text:'Rising sell pressure across Solana meme sector. +14% panic-sell signatures in 30 min. Liquidity stress elevated.',sev:'HIGH',sc:'H'},
+  {t:'01:12',tag:'t-rug',lbl:'RUG',text:'ZKSNAP top-holder concentration 48.3% — above critical threshold. Liquidity lock unverified. Dev wallet age: 4 days.',sev:'HIGH',sc:'H'},
+  {t:'01:29',tag:'t-whale',lbl:'WHALE',text:'$81.4M BTC to Binance hot wallet. 3 coordinated addresses. Exchange inflow ratio elevated. Distribution signal.',sev:'MEDIUM',sc:'M'},
+  {t:'01:44',tag:'t-meme',lbl:'MEME',text:'LUNZ early momentum: volume +820% in 45min, 240 new holders/hour. Social mentions spiking across Telegram.',sev:'LOW',sc:'L'},
+  {t:'02:03',tag:'t-panic',lbl:'PANIC',text:'Retail FOMO index crossed 85%. Historical crossings preceded 20–40% corrections within 48–96h.',sev:'HIGH',sc:'H'},
+  {t:'02:17',tag:'t-rug',lbl:'RUG',text:'MOBOX2 fake liquidity: pool appears deep but 94% single-wallet controlled. Exit vector confirmed.',sev:'HIGH',sc:'H'},
+  {t:'02:31',tag:'t-whale',lbl:'WHALE',text:'Smart wallet 0x7c1…3ab9 (94% win-rate) opened PEPE position — $340K across 4 txns in 8 min.',sev:'LOW',sc:'L'},
+];
+
+function feedHTML(item,isNew=false){
+  return`<div class="fi${isNew?' fi-new':''}">
+    <span class="fi-time">${item.t}</span>
+    <span class="fi-tag ${item.tag}">${item.lbl}</span>
+    <span class="fi-text">${item.text}</span>
+    <span class="fi-sev ${item.sc}">${item.sev}</span>
+  </div>`;
+}
+
+const feedList=document.getElementById('feedList');
+feedList.innerHTML=FEED.map(f=>feedHTML(f)).join('');
+
+/* hero panel — first 5 */
+const heroPF=document.getElementById('heroPanelFeed');
+const hItems=FEED.slice(0,5);
+heroPF.innerHTML=hItems.map(f=>`
+  <div class="mini-alert">
+    <span class="ma-time">${f.t}</span>
+    <span class="ma-text"><strong>${f.lbl}</strong> — ${f.text.substring(0,72)}…</span>
+    <span class="ma-sev ${f.sc}">${f.sev}</span>
+  </div>`).join('');
+
+/* auto-stream new alerts */
+const LIVE=[
+  {t:'now',tag:'t-rug',lbl:'RUG',text:'DARKFI flagged — sniper activity in first 12 blocks. 8 wallets pre-loaded before public launch.',sev:'HIGH',sc:'H'},
+  {t:'now',tag:'t-whale',lbl:'WHALE',text:'SOL transfer $6.8M from cold storage to DEX. First movement in 94 days. Monitor closely.',sev:'MEDIUM',sc:'M'},
+  {t:'now',tag:'t-meme',lbl:'MEME',text:'SHIBX2 viral growth — volume +1,400%. Holder count expanding rapidly. Social channels active.',sev:'LOW',sc:'L'},
+  {t:'now',tag:'t-panic',lbl:'PANIC',text:'Cascade sell pattern emerging on 3 Solana meme tokens simultaneously. Coordinated exit suspected.',sev:'HIGH',sc:'H'},
+];
+let li=0;
+setInterval(()=>{
+  const item=LIVE[li%LIVE.length];li++;
+  const el=document.createElement('div');
+  el.outerHTML; // placeholder
+  feedList.insertAdjacentHTML('afterbegin',feedHTML(item,true));
+  while(feedList.children.length>16)feedList.removeChild(feedList.lastChild);
+  // update hero panel
+  heroPF.insertAdjacentHTML('afterbegin',`<div class="mini-alert fi-new">
+    <span class="ma-time">now</span>
+    <span class="ma-text"><strong>${item.lbl}</strong> — ${item.text.substring(0,72)}…</span>
+    <span class="ma-sev ${item.sc}">${item.sev}</span>
+  </div>`);
+  while(heroPF.children.length>5)heroPF.removeChild(heroPF.lastChild);
+},5000);
+
+/* ─── SCANNER ─────────────────────────────── */
+function doScan(){
+  const v=document.getElementById('cInput').value.trim();
+  if(!v)return;
+  document.getElementById('scanPrompt').style.display='none';
+  document.getElementById('scanMeta').style.display='block';
+  document.getElementById('scanPlaceholder').style.display='none';
+  document.getElementById('scanResult').style.display='block';
+}
+document.getElementById('cInput').addEventListener('keydown',e=>{if(e.key==='Enter')doScan()});
+
+/* ─── REVEAL ON SCROLL ───────────────────── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on')});
+},{threshold:0.07});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ─── AGENT ACCURACY BARS ────────────────── */
+document.querySelectorAll('.agent-bar-fill').forEach(b=>{
+  b.style.width='0';
+  setTimeout(()=>{b.style.width=b.dataset.w+'%'},400);
+});
+
+/* ─── MOB MENU ────────────────────────────── */
+function toggleMob(){document.getElementById('mobMenu').classList.toggle('open')}
+</script>
+</body>
+</html>
